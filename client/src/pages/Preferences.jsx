@@ -16,17 +16,40 @@ const SECTIONS = [
   { key: 'account', label: 'My account' },
 ];
 
+/** Same set the Users screen offers, so diary colours stay consistent. */
+const AVATAR_COLOURS = ['#14544a', '#8c5a2b', '#3d6e96', '#6b4c8a', '#4a7c46', '#a07a25', '#a8443c'];
+
+const blankProfile = { name: '', email: '', phone: '', specialty: '', colour: AVATAR_COLOURS[0] };
+
 export default function Preferences() {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, setUser } = useAuth();
   const toast = useToast();
   const [section, setSection] = useState('clinic');
   const [form, setForm] = useState(null);
+  const [profile, setProfile] = useState(blankProfile);
 
   const { data: settings } = useQuery({ queryKey: ['settings'], queryFn: () => get('/settings') });
 
   useEffect(() => {
     if (settings) setForm(structuredClone(settings));
   }, [settings]);
+
+  useEffect(() => {
+    if (!user) return;
+    setProfile({
+      name: user.name ?? '',
+      email: user.email ?? '',
+      phone: user.phone ?? '',
+      specialty: user.specialty ?? '',
+      colour: user.colour ?? AVATAR_COLOURS[0],
+    });
+  }, [user]);
+
+  const saveProfile = useSaveMutation({
+    mutationFn: (payload) => patch('/auth/profile', payload),
+    invalidate: ['users', 'appointments', 'dashboard'],
+    successMessage: 'Your details were updated',
+  });
 
   const save = useSaveMutation({
     mutationFn: (payload) => patch('/settings', payload),
@@ -243,7 +266,7 @@ export default function Preferences() {
               <CardHead title="My account" sub="Your profile and sign-in" />
               <div className="card__body">
                 <div className="account-head">
-                  <Avatar name={user?.name} colour={user?.colour} initials={user?.avatarInitials} size="xl" />
+                  <Avatar name={profile.name} colour={profile.colour} initials={user?.avatarInitials} size="xl" />
                   <div>
                     <strong style={{ display: 'block', fontSize: 'var(--text-lg)' }}>{user?.name}</strong>
                     <p className="muted">{user?.email}</p>
@@ -251,9 +274,85 @@ export default function Preferences() {
                   </div>
                 </div>
 
+                <fieldset className="fieldset" style={{ marginTop: 'var(--sp-6)' }}>
+                  <legend className="fieldset__legend">Your details</legend>
+                  <form
+                    className="form-grid"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      saveProfile.mutate(profile, {
+                        // Keep the sidebar, topbar and avatars in step with the new name.
+                        onSuccess: (updated) => setUser(updated),
+                      });
+                    }}
+                  >
+                    <Field label="Full name" required error={saveProfile.fieldErrors.name}>
+                      <Input
+                        value={profile.name}
+                        onChange={(event) => setProfile((c) => ({ ...c, name: event.target.value }))}
+                        error={saveProfile.fieldErrors.name}
+                        required
+                      />
+                    </Field>
+
+                    <Field
+                      label="Email address"
+                      required
+                      hint="You sign in with this"
+                      error={saveProfile.fieldErrors.email}
+                    >
+                      <Input
+                        type="email"
+                        value={profile.email}
+                        onChange={(event) => setProfile((c) => ({ ...c, email: event.target.value }))}
+                        error={saveProfile.fieldErrors.email}
+                        required
+                      />
+                    </Field>
+
+                    <Field label="Phone">
+                      <Input
+                        value={profile.phone}
+                        onChange={(event) => setProfile((c) => ({ ...c, phone: event.target.value }))}
+                      />
+                    </Field>
+
+                    <Field label="Specialty" hint="Shown beside your name">
+                      <Input
+                        value={profile.specialty}
+                        onChange={(event) => setProfile((c) => ({ ...c, specialty: event.target.value }))}
+                        placeholder="Prosthodontics"
+                      />
+                    </Field>
+
+                    <Field label="Diary colour" hint="Identifies you on the schedule" className="span-2">
+                      <div className="colour-picker">
+                        {AVATAR_COLOURS.map((colour) => (
+                          <button
+                            key={colour}
+                            type="button"
+                            className="colour-picker__swatch"
+                            style={{ background: colour, color: colour }}
+                            aria-label={`Colour ${colour}`}
+                            aria-pressed={profile.colour === colour}
+                            onClick={() => setProfile((c) => ({ ...c, colour }))}
+                          />
+                        ))}
+                      </div>
+                    </Field>
+
+                    <div className="span-2" style={{ textAlign: 'right' }}>
+                      <Button variant="primary" type="submit" icon={IconCheck} loading={saveProfile.isPending}>
+                        Save details
+                      </Button>
+                    </div>
+                  </form>
+                </fieldset>
+
+                <fieldset className="fieldset" style={{ marginBottom: 0 }}>
+                  <legend className="fieldset__legend">Change password</legend>
                 <form
                   className="form-grid"
-                  style={{ marginTop: 'var(--sp-6)' }}
                   onSubmit={(event) => {
                     event.preventDefault();
                     const { currentPassword, newPassword, confirmPassword } = event.target.elements;
@@ -282,6 +381,7 @@ export default function Preferences() {
                     </Button>
                   </div>
                 </form>
+                </fieldset>
               </div>
             </Card>
           )}

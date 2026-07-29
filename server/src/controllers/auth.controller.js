@@ -15,6 +15,15 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8, 'Use at least 8 characters'),
 });
 
+/** Fields a user may change on their own account — role and status are not among them. */
+export const updateProfileSchema = z.object({
+  name: z.string().min(2, 'Enter your full name').optional(),
+  email: z.string().email('Enter a valid email address').optional(),
+  phone: z.string().optional(),
+  specialty: z.string().optional(),
+  colour: z.string().optional(),
+});
+
 function signToken(user) {
   return jwt.sign({ sub: user._id.toString(), role: user.role }, env.jwtSecret, {
     expiresIn: env.jwtExpiresIn,
@@ -52,6 +61,22 @@ export const logout = asyncHandler(async (_req, res) => {
 
 export const me = asyncHandler(async (req, res) => {
   res.json({ success: true, data: req.user });
+});
+
+export const updateProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) throw ApiError.unauthorized();
+
+  // Two people signing in with the same email would make the login ambiguous.
+  if (req.body.email && req.body.email.toLowerCase() !== user.email) {
+    const taken = await User.findOne({ email: req.body.email.toLowerCase(), _id: { $ne: user._id } });
+    if (taken) throw ApiError.conflict('Another team member already uses that email');
+  }
+
+  Object.assign(user, req.body);
+  await user.save();
+
+  res.json({ success: true, data: user.toJSON() });
 });
 
 export const changePassword = asyncHandler(async (req, res) => {

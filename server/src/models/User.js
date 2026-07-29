@@ -37,7 +37,8 @@ userSchema.pre('save', async function hashPassword(next) {
 });
 
 userSchema.pre('save', function setInitials(next) {
-  if (!this.avatarInitials && this.name) {
+  // Recompute whenever the name changes, so the avatar never shows stale initials.
+  if (this.name && (this.isModified('name') || !this.avatarInitials)) {
     this.avatarInitials = this.name
       .replace(/^(Dr\.?|Prof\.?)\s+/i, '')
       .split(/\s+/)
