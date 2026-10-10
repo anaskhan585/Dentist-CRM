@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongooseLeanVirtuals from 'mongoose-lean-virtuals';
 
 // The lab workflow is a pipeline — these stages drive the Lab Tracking board.
 export const LAB_STAGES = [
@@ -56,6 +57,10 @@ labCaseSchema.virtual('isOverdue').get(function isOverdue() {
 });
 
 labCaseSchema.index({ stage: 1, dueAt: 1 });
+
+// Read paths use .lean() for speed; without this plugin mongoose drops the
+// virtuals from lean results and the computed fields come back undefined.
+labCaseSchema.plugin(mongooseLeanVirtuals);
 
 labCaseSchema.set('toJSON', { virtuals: true });
 labCaseSchema.set('toObject', { virtuals: true });

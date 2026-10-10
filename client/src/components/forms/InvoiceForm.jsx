@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { post } from '../../lib/api.js';
+import { del, patch, post } from '../../lib/api.js';
 import { useSaveMutation } from '../../lib/useSaveMutation.js';
-import { money } from '../../lib/format.js';
+import { date, money } from '../../lib/format.js';
 import { IconPlus, IconTrash } from '../../lib/icons.jsx';
-import { Button, Field, Input, Modal, Select, Textarea } from '../ui/index.jsx';
+import { Badge, Button, Field, Input, Modal, Select, Textarea } from '../ui/index.jsx';
+import { INVOICE_STATUS } from '../../lib/constants.js';
 import { DentistSelect, PatientPicker, useSettings } from './pickers.jsx';
 
 const PRICE_LIST = [
@@ -20,22 +21,61 @@ const PRICE_LIST = [
 
 const blankItem = () => ({ description: '', quantity: 1, unitPrice: 0, discount: 0 });
 
-export default function InvoiceForm({ open, onClose, patientId }) {
-  const [form, setForm] = useState({ patient: '', dentist: '', items: [blankItem()], amountPaid: 0, paymentMethod: '', notes: '' });
+const emptyForm = (patientId) => ({
+  patient: patientId ?? '',
+  dentist: '',
+  items: [blankItem()],
+  amountPaid: 0,
+  paymentMethod: '',
+  notes: '',
+});
+
+/** Pulls an existing invoice back into the shape the form edits. */
+const formFromInvoice = (invoice) => ({
+  patient: invoice.patient?._id ?? invoice.patient ?? '',
+  dentist: invoice.dentist?._id ?? invoice.dentist ?? '',
+  items: invoice.items?.length
+    ? invoice.items.map((item) => ({
+        description: item.description ?? '',
+        quantity: item.quantity ?? 1,
+        unitPrice: item.unitPrice ?? 0,
+        discount: item.discount ?? 0,
+      }))
+    : [blankItem()],
+  amountPaid: invoice.amountPaid ?? 0,
+  paymentMethod: invoice.paymentMethod ?? '',
+  notes: invoice.notes ?? '',
+});
+
+/**
+ * Creates an invoice, or edits one when `invoice` is passed — the Invoices list
+ * and a patient's billing tab both open this on a row.
+ */
+export default function InvoiceForm({ open, onClose, patientId, invoice = null }) {
+  const editing = Boolean(invoice?._id);
+  const [form, setForm] = useState(emptyForm(patientId));
   const { data: settings } = useSettings();
   const symbol = settings?.locale?.currencySymbol ?? 'Rs';
-  const taxRate = settings?.billing?.taxRate ?? 0;
+  // An existing invoice keeps the rate it was raised at, so editing it cannot
+  // silently re-tax the patient when the practice changes its settings.
+  const taxRate = editing ? (invoice.taxRate ?? 0) : (settings?.billing?.taxRate ?? 0);
 
   useEffect(() => {
-    if (open) {
-      setForm({ patient: patientId ?? '', dentist: '', items: [blankItem()], amountPaid: 0, paymentMethod: '', notes: '' });
-    }
-  }, [open, patientId]);
+    if (open) setForm(editing ? formFromInvoice(invoice) : emptyForm(patientId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, patientId, invoice?._id]);
 
   const save = useSaveMutation({
-    mutationFn: (payload) => post('/invoices', payload),
+    mutationFn: (payload) => (editing ? patch(`/invoices/${invoice._id}`, payload) : post('/invoices', payload)),
     invalidate: ['invoices', 'patients', 'dashboard'],
-    successMessage: 'Invoice created',
+    successMessage: editing ? 'Invoice updated' : 'Invoice created',
+    onSuccess: onClose,
+  });
+
+  const voidInvoice = useSaveMutation({
+    mutationFn: () => del(`/invoices/${invoice._id}`),
+    invalidate: ['invoices', 'patients', 'dashboard'],
+    successMessage: 'Invoice voided',
     onSuccess: onClose,
   });
 
@@ -78,8 +118,12 @@ export default function InvoiceForm({ open, onClose, patientId }) {
       open={open}
       onClose={onClose}
       size="wide"
-      title="Create an invoice"
-      sub="Line items price up from the practice's standard list"
+      title={editing ? `Invoice ${invoice.invoiceNo}` : 'Create an invoice'}
+      sub={
+        editing
+          ? `Issued ${date(invoice.issuedAt, 'D MMM YYYY')} · ${money(invoice.amountPaid, { symbol })} paid of ${money(total, { symbol })}`
+          : "Line items price up from the practice's standard list"
+      }
       footer={
         <>
           <div style={{ marginRight: 'auto', textAlign: 'left' }}>
@@ -88,16 +132,38 @@ export default function InvoiceForm({ open, onClose, patientId }) {
               {money(total, { symbol })}
             </p>
           </div>
+          {editing && invoice.status !== 'void' && (
+            <Button
+              variant="ghost"
+              data-tone="danger"
+              loading={voidInvoice.isPending}
+              onClick={() => voidInvoice.mutate()}
+            >
+              Void
+            </Button>
+          )}
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
           <Button variant="primary" form="invoice-form" type="submit" loading={save.isPending}>
-            Create invoice
+            {editing ? 'Save changes' : 'Create invoice'}
           </Button>
         </>
       }
     >
       <form id="invoice-form" onSubmit={submit}>
+        {editing && (
+          <div className="invoice-state">
+            <Badge tone={INVOICE_STATUS[invoice.status]?.tone} dot>
+              {INVOICE_STATUS[invoice.status]?.label}
+            </Badge>
+            <span className="muted">
+              Outstanding <strong className="numeric">{money(Math.max(0, total - (Number(form.amountPaid) || 0)), { symbol })}</strong>
+            </span>
+            {taxRate > 0 && <span className="muted">Tax {taxRate}%</span>}
+          </div>
+        )}
+
         <div className="form-grid" style={{ marginBottom: 'var(--sp-6)' }}>
           <Field label="Patient" required error={errors.patient} className="span-2">
             <PatientPicker
@@ -212,7 +278,10 @@ export default function InvoiceForm({ open, onClose, patientId }) {
         </fieldset>
 
         <div className="form-grid">
-          <Field label="Amount paid now" hint={`Balance: ${money(Math.max(0, total - (Number(form.amountPaid) || 0)), { symbol })}`}>
+          <Field
+            label={editing ? 'Amount paid to date' : 'Amount paid now'}
+            hint={`Balance: ${money(Math.max(0, total - (Number(form.amountPaid) || 0)), { symbol })}`}
+          >
             <Input
               type="number"
               min="0"

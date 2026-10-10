@@ -764,6 +764,24 @@
 
 /* --- Line items ----------------------------------------------------------- */
 
+/* Strip above the fields when an existing invoice is opened for editing. */
+.invoice-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--brand-softer);
+  font-size: var(--text-sm);
+}
+
+.invoice-state strong {
+  color: var(--ink);
+}
+
 .line-items {
   display: grid;
   gap: var(--sp-2);

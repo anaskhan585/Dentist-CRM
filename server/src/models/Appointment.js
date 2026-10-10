@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongooseLeanVirtuals from 'mongoose-lean-virtuals';
 
 export const APPOINTMENT_STATUSES = [
   'scheduled',
@@ -45,6 +46,10 @@ appointmentSchema.virtual('endAt').get(function endAt() {
 
 appointmentSchema.index({ startAt: 1, dentist: 1 });
 appointmentSchema.index({ patient: 1, startAt: -1 });
+
+// Read paths use .lean() for speed; without this plugin mongoose drops the
+// virtuals from lean results and the computed fields come back undefined.
+appointmentSchema.plugin(mongooseLeanVirtuals);
 
 appointmentSchema.set('toJSON', { virtuals: true });
 appointmentSchema.set('toObject', { virtuals: true });

@@ -108,6 +108,7 @@ export default function Invoices() {
   const [sort, setSort] = useState('-issuedAt');
   const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState(null);
   const [paying, setPaying] = useState(null);
 
   const { data: settings } = useSettings();
@@ -131,9 +132,8 @@ export default function Invoices() {
   });
 
   const invoices = data?.data ?? [];
-  const outstanding = invoices
-    .filter((invoice) => ['unpaid', 'partial'].includes(invoice.status))
-    .reduce((sum, invoice) => sum + (invoice.balance ?? 0), 0);
+  // The server sums the whole filtered set, so this is not just the page shown.
+  const summary = data?.meta?.summary;
 
   return (
     <>
@@ -141,7 +141,10 @@ export default function Invoices() {
         title="Invoices"
         sub={
           data?.meta
-            ? `${data.meta.total} invoices · ${money(outstanding, { symbol })} outstanding on this page`
+            ? `Every patient · ${data.meta.total} invoices · ${money(summary?.billed, { symbol })} billed · ${money(
+                summary?.collected,
+                { symbol }
+              )} collected · ${money(summary?.outstanding, { symbol })} outstanding`
             : 'Billing'
         }
       >
@@ -187,7 +190,7 @@ export default function Invoices() {
         </div>
 
         <div className="table-wrap">
-          <table className="table">
+          <table className="table table--clickable">
             <thead>
               <tr>
                 <th>Invoice</th>
@@ -206,13 +209,29 @@ export default function Invoices() {
             ) : (
               <tbody>
                 {invoices.map((invoice) => (
-                  <tr key={invoice._id}>
+                  <tr
+                    key={invoice._id}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Open invoice ${invoice.invoiceNo}`}
+                    onClick={() => setEditing(invoice)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        setEditing(invoice);
+                      }
+                    }}
+                  >
                     <td className="numeric" style={{ fontWeight: 600 }}>
                       {invoice.invoiceNo}
                     </td>
                     <td>
                       {invoice.patient?._id ? (
-                        <Link to={`/patients/${invoice.patient._id}`} className="person">
+                        <Link
+                          to={`/patients/${invoice.patient._id}`}
+                          className="person"
+                          onClick={(event) => event.stopPropagation()}
+                        >
                           <Avatar name={fullName(invoice.patient)} size="sm" />
                           <span className="person__name">{fullName(invoice.patient)}</span>
                         </Link>
@@ -239,7 +258,13 @@ export default function Invoices() {
                     </td>
                     <td>
                       {invoice.balance > 0 && invoice.status !== 'void' && (
-                        <Button size="sm" onClick={() => setPaying(invoice)}>
+                        <Button
+                          size="sm"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setPaying(invoice);
+                          }}
+                        >
                           Record payment
                         </Button>
                       )}
@@ -271,6 +296,7 @@ export default function Invoices() {
       </Card>
 
       <InvoiceForm open={creating} onClose={() => setCreating(false)} />
+      {editing && <InvoiceForm open invoice={editing} onClose={() => setEditing(null)} />}
       {paying && <PaymentModal invoice={paying} symbol={symbol} onClose={() => setPaying(null)} />}
     </>
   );

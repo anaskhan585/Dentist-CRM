@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongooseLeanVirtuals from 'mongoose-lean-virtuals';
 
 const lineItemSchema = new mongoose.Schema(
   {
@@ -48,6 +49,10 @@ invoiceSchema.virtual('balance').get(function balance() {
 
 invoiceSchema.index({ status: 1, issuedAt: -1 });
 invoiceSchema.index({ patient: 1, issuedAt: -1 });
+
+// Read paths use .lean() for speed; without this plugin mongoose drops the
+// virtuals from lean results and the computed fields come back undefined.
+invoiceSchema.plugin(mongooseLeanVirtuals);
 
 invoiceSchema.set('toJSON', { virtuals: true });
 invoiceSchema.set('toObject', { virtuals: true });

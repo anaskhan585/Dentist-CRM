@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { get, patch } from '../lib/api.js';
 import { age, date, dayjs, fullName, money, time, titleCase } from '../lib/format.js';
@@ -134,6 +134,7 @@ export default function PatientDetail() {
   const [booking, setBooking] = useState(false);
   const [recording, setRecording] = useState(false);
   const [invoicing, setInvoicing] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState(null);
   const [toothEdit, setToothEdit] = useState(null);
 
   const { data: settings } = useSettings();
@@ -493,7 +494,7 @@ export default function PatientDetail() {
           </CardHead>
           {invoices.length ? (
             <div className="table-wrap">
-              <table className="table">
+              <table className="table table--clickable">
                 <thead>
                   <tr>
                     <th>Invoice</th>
@@ -506,11 +507,21 @@ export default function PatientDetail() {
                 </thead>
                 <tbody>
                   {invoices.map((invoice) => (
-                    <tr key={invoice._id}>
-                      <td className="numeric">
-                        <Link to="/reports" style={{ fontWeight: 600 }}>
-                          {invoice.invoiceNo}
-                        </Link>
+                    <tr
+                      key={invoice._id}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`Open invoice ${invoice.invoiceNo}`}
+                      onClick={() => setEditingInvoice(invoice)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setEditingInvoice(invoice);
+                        }
+                      }}
+                    >
+                      <td className="numeric" style={{ fontWeight: 600 }}>
+                        {invoice.invoiceNo}
                       </td>
                       <td className="muted">{date(invoice.issuedAt, 'D MMM YYYY')}</td>
                       <td className="muted truncate" style={{ maxWidth: 240 }}>
@@ -589,6 +600,7 @@ export default function PatientDetail() {
       <AppointmentForm open={booking} onClose={() => setBooking(false)} prefill={{ patient: patient._id }} />
       <HealthRecordForm open={recording} onClose={() => setRecording(false)} patientId={patient._id} />
       <InvoiceForm open={invoicing} onClose={() => setInvoicing(false)} patientId={patient._id} />
+      {editingInvoice && <InvoiceForm open invoice={editingInvoice} onClose={() => setEditingInvoice(null)} />}
       {toothEdit && (
         <ToothModal tooth={toothEdit.tooth} entry={toothEdit.entry} patientId={patient._id} onClose={() => setToothEdit(null)} />
       )}

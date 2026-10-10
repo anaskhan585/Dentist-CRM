@@ -143,6 +143,16 @@
   color: var(--ink-2);
 }
 
+/* Destructive actions sitting in a footer of ordinary buttons, e.g. voiding
+   an invoice — the attribute already reads this way on menu items. */
+.btn[data-tone='danger'] {
+  color: var(--rose);
+}
+
+.btn--ghost[data-tone='danger']:hover:not(:disabled) {
+  background: var(--rose-soft);
+}
+
 .btn--ghost:hover:not(:disabled) {
   background: rgba(15, 42, 49, 0.06);
   color: var(--ink);
@@ -292,6 +302,13 @@
 
 .table--clickable tbody tr {
   cursor: pointer;
+}
+
+/* Rows are reachable by keyboard, so the focus ring has to be visible on them. */
+.table--clickable tbody tr:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+  background: var(--surface-sunken);
 }
 
 .table__num {

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongooseLeanVirtuals from 'mongoose-lean-virtuals';
 
 const toothConditionSchema = new mongoose.Schema(
   {
@@ -69,6 +70,10 @@ patientSchema.virtual('age').get(function age() {
 
 patientSchema.index({ firstName: 'text', lastName: 'text', phone: 'text', fileNo: 'text' });
 patientSchema.index({ status: 1, createdAt: -1 });
+
+// Read paths use .lean() for speed; without this plugin mongoose drops the
+// virtuals from lean results and the computed fields come back undefined.
+patientSchema.plugin(mongooseLeanVirtuals);
 
 patientSchema.set('toJSON', { virtuals: true });
 patientSchema.set('toObject', { virtuals: true });

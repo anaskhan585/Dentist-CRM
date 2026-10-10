@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { z } from 'zod';
 import { Invoice } from '../models/Invoice.js';
 import { Patient } from '../models/Patient.js';
@@ -48,6 +49,8 @@ async function reconcile(invoice) {
       invoice.status = 'paid';
       invoice.paidAt = invoice.paidAt ?? new Date();
     }
+    // Editing an invoice upwards can take it back out of "paid"; the date follows.
+    if (invoice.status !== 'paid') invoice.paidAt = undefined;
   }
   await invoice.save();
 
@@ -60,11 +63,62 @@ async function reconcile(invoice) {
   await Patient.findByIdAndUpdate(invoice.patient, { balance: Math.round(balance * 100) / 100 });
 }
 
+/**
+ * Totals over the whole filtered set, not just the page on screen — a billing
+ * overview that only adds up 20 rows is worse than no number at all.
+ * The arithmetic mirrors the `subtotal`/`total`/`balance` virtuals on the model.
+ */
+async function summarise(filter) {
+  const [row] = await Invoice.aggregate([
+    { $match: filter },
+    {
+      $addFields: {
+        _subtotal: {
+          $reduce: {
+            input: { $ifNull: ['$items', []] },
+            initialValue: 0,
+            in: {
+              $add: [
+                '$$value',
+                {
+                  $subtract: [
+                    { $multiply: [{ $ifNull: ['$$this.quantity', 1] }, { $ifNull: ['$$this.unitPrice', 0] }] },
+                    { $ifNull: ['$$this.discount', 0] },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+    { $addFields: { _total: { $multiply: ['$_subtotal', { $add: [1, { $divide: [{ $ifNull: ['$taxRate', 0] }, 100] }] }] } } },
+    {
+      $group: {
+        _id: null,
+        billed: { $sum: { $cond: [{ $eq: ['$status', 'void'] }, 0, '$_total'] } },
+        collected: { $sum: '$amountPaid' },
+        outstanding: {
+          $sum: { $cond: [{ $in: ['$status', ['unpaid', 'partial']] }, { $subtract: ['$_total', '$amountPaid'] }, 0] },
+        },
+      },
+    },
+  ]);
+
+  const round = (value) => Math.round((value ?? 0) * 100) / 100;
+  return { billed: round(row?.billed), collected: round(row?.collected), outstanding: round(row?.outstanding) };
+}
+
 export const listInvoices = asyncHandler(async (req, res) => {
   const { page, limit, skip } = paginate(req.query);
   const filter = {};
   if (req.query.status) filter.status = req.query.status;
-  if (req.query.patient) filter.patient = req.query.patient;
+  if (req.query.patient) {
+    if (!mongoose.isValidObjectId(req.query.patient)) throw ApiError.badRequest('Invalid patient id');
+    // Cast it here: find() would do this itself, but the aggregate in
+    // summarise() gets no schema casting and a string would match nothing.
+    filter.patient = new mongoose.Types.ObjectId(req.query.patient);
+  }
   if (req.query.from || req.query.to) {
     filter.issuedAt = {};
     if (req.query.from) filter.issuedAt.$gte = new Date(req.query.from);
@@ -72,7 +126,7 @@ export const listInvoices = asyncHandler(async (req, res) => {
   }
   if (req.query.search) filter.invoiceNo = new RegExp(escapeRegex(req.query.search), 'i');
 
-  const [items, total] = await Promise.all([
+  const [items, total, summary] = await Promise.all([
     Invoice.find(filter)
       .populate('patient', 'firstName lastName fileNo phone')
       .populate('dentist', 'name colour avatarInitials')
@@ -81,9 +135,10 @@ export const listInvoices = asyncHandler(async (req, res) => {
       .limit(limit)
       .lean({ virtuals: true }),
     Invoice.countDocuments(filter),
+    summarise(filter),
   ]);
 
-  res.json({ success: true, data: items, meta: meta({ page, limit, total }) });
+  res.json({ success: true, data: items, meta: { ...meta({ page, limit, total }), summary } });
 });
 
 export const getInvoice = asyncHandler(async (req, res) => {
@@ -110,9 +165,23 @@ export const createInvoice = asyncHandler(async (req, res) => {
 export const updateInvoice = asyncHandler(async (req, res) => {
   const invoice = await Invoice.findById(req.params.id);
   if (!invoice) throw ApiError.notFound('Invoice not found');
-  Object.assign(invoice, req.body);
+
+  const patch = { ...req.body };
+  // A cleared picker arrives as '', which would never cast to an ObjectId.
+  for (const key of ['dentist', 'appointment']) {
+    if (patch[key] === '') patch[key] = undefined;
+  }
+  // The number is the practice's audit trail; it is not editable.
+  delete patch.invoiceNo;
+
+  Object.assign(invoice, patch);
   await reconcile(invoice);
-  res.json({ success: true, data: invoice });
+
+  const populated = await invoice.populate([
+    { path: 'patient', select: 'firstName lastName fileNo phone' },
+    { path: 'dentist', select: 'name colour avatarInitials' },
+  ]);
+  res.json({ success: true, data: populated });
 });
 
 export const recordPayment = asyncHandler(async (req, res) => {
