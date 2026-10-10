@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { patch, post } from '../../lib/api.js';
+import { useQuery } from '@tanstack/react-query';
+import { getList, patch, post } from '../../lib/api.js';
 import { useSaveMutation } from '../../lib/useSaveMutation.js';
-import { dayjs } from '../../lib/format.js';
+import { dayjs, fullName, time } from '../../lib/format.js';
 import { TREATMENTS } from '../../lib/constants.js';
 import { Button, Field, Input, Modal, Select, Textarea } from '../ui/index.jsx';
 import { DentistSelect, PatientPicker, useSettings } from './pickers.jsx';
@@ -48,6 +49,20 @@ export default function AppointmentForm({ open, onClose, appointment, prefill })
       setForm(defaults(prefill));
     }
   }, [open, appointment, prefill]);
+
+  // Show what the chosen clinician already has that day, so the user can pick a
+  // free slot instead of guessing and hitting the double-booking guard.
+  const { data: dayList } = useQuery({
+    queryKey: ['appointments', 'busy', form.dentist, form.date],
+    queryFn: () => getList('/appointments', { params: { date: form.date, dentist: form.dentist, limit: 50 } }),
+    enabled: open && Boolean(form.dentist) && Boolean(form.date),
+    staleTime: 15000,
+  });
+
+  const busy = (dayList?.data ?? [])
+    .filter((item) => !['cancelled', 'no-show'].includes(item.status))
+    .filter((item) => item._id !== appointment?._id)
+    .sort((a, b) => new Date(a.startAt) - new Date(b.startAt));
 
   const save = useSaveMutation({
     mutationFn: (payload) =>
@@ -160,6 +175,26 @@ export default function AppointmentForm({ open, onClose, appointment, prefill })
                 <option value="no-show">No show</option>
               </Select>
             </Field>
+          )}
+
+          {busy.length > 0 && (
+            <div className="span-2 busy-hint">
+              <span className="eyebrow">
+                Already booked on {dayjs(form.date).format('MMM D')} — avoid these times
+              </span>
+              <div className="busy-hint__slots">
+                {busy.map((item) => (
+                  <span
+                    key={item._id}
+                    className="busy-hint__slot numeric"
+                    title={`${fullName(item.patient)} · ${item.treatment}`}
+                  >
+                    {time(item.startAt)}
+                    <i>{item.durationMinutes}m</i>
+                  </span>
+                ))}
+              </div>
+            </div>
           )}
 
           <Field label="Notes" className="span-2">

@@ -181,7 +181,7 @@ export default function Dashboard() {
                         <strong>{time(appointment.startAt)}</strong>
                         <span>{appointment.durationMinutes}m</span>
                       </span>
-                      <span className="agenda__rule" style={{ background: appointment.dentist?.colour ?? 'var(--pine)' }} />
+                      <span className="agenda__rule" style={{ background: appointment.dentist?.colour ?? 'var(--brand)' }} />
                       <span className="agenda__body">
                         <strong>{fullName(appointment.patient)}</strong>
                         <span>

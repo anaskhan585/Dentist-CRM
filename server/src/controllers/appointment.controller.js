@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { Appointment, APPOINTMENT_STATUSES } from '../models/Appointment.js';
 import { Patient } from '../models/Patient.js';
+import { Settings } from '../models/Settings.js';
 import { ApiError } from '../utils/ApiError.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { dayRange, meta, paginate } from '../utils/query.js';
@@ -17,6 +18,21 @@ export const appointmentSchema = z.object({
 });
 
 export const updateAppointmentSchema = appointmentSchema.partial();
+
+/** Formats a slot in the clinic's own timezone, so the message reads correctly
+ *  regardless of where the server happens to be hosted. */
+async function describeSlot(startAt, durationMinutes) {
+  const settings = await Settings.findOne({ key: 'clinic' }).select('locale.timezone').lean();
+  const format = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: settings?.locale?.timezone ?? 'UTC',
+  });
+  const start = new Date(startAt);
+  const end = new Date(start.getTime() + durationMinutes * 60000);
+  return `${format.format(start)}–${format.format(end)}`;
+}
 
 /** Rejects a booking that overlaps an existing one for the same dentist. */
 async function assertNoClash({ dentist, startAt, durationMinutes = 30, excludeId }) {
@@ -36,7 +52,12 @@ async function assertNoClash({ dentist, startAt, durationMinutes = 30, excludeId
   });
 
   if (clash) {
-    throw ApiError.conflict('That chair time overlaps another booking for this dentist');
+    // Name the clashing slot and the treatment — the front desk needs to know
+    // what to move, and that switching chairs will not help.
+    const slot = await describeSlot(clash.startAt, clash.durationMinutes);
+    throw ApiError.conflict(
+      `This clinician is already booked ${slot} for ${clash.treatment}. Choose another time, or a different clinician.`
+    );
   }
 }
 

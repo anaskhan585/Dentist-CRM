@@ -35,18 +35,12 @@ export default function Login() {
       <section className="login__panel">
         <div className="login__panel-inner">
           <div className="login__brand">
-            <span className="login__mark">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path
-                  d="M12 3.4c-1.9 0-2.9.8-4.7.8-2.1 0-4 1.7-4 4.8 0 3.6 1.1 6.2 2 8.6.8 2.1 1.4 5 3.1 5 1.5 0 1.7-1.9 1.9-3.6.2-1.5.6-2.7 1.7-2.7s1.5 1.2 1.7 2.7c.2 1.7.4 3.6 1.9 3.6 1.7 0 2.3-2.9 3.1-5 .9-2.4 2-5 2-8.6 0-3.1-1.9-4.8-4-4.8-1.8 0-2.8-.8-4.7-.8Z"
-                  fill="currentColor"
-                />
-              </svg>
-            </span>
-            <div>
-              <strong>Vanguard Dental Studio</strong>
-              <span>Practice CRM</span>
-            </div>
+            <img
+              className="login__logo"
+              src="/brand/vive-logo-white.png"
+              alt="Vive Dental Clinic"
+            />
+            <span className="login__tagline">One Place. One Team. One Smile.</span>
           </div>
 
           <blockquote className="login__quote">
@@ -87,7 +81,7 @@ export default function Login() {
               value={form.email}
               autoComplete="username"
               autoFocus
-              placeholder="you@vanguarddental.pk"
+              placeholder="you@vive.dental"
               onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
               required
             />

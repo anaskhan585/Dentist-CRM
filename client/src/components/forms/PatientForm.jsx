@@ -119,7 +119,7 @@ export default function PatientForm({ open, onClose, patient }) {
               <Input value={form.lastName} onChange={set('lastName')} error={errors.lastName} required />
             </Field>
             <Field label="Phone" required error={errors.phone} hint="Used for appointment reminders">
-              <Input value={form.phone} onChange={set('phone')} error={errors.phone} placeholder="+92 300 1234567" required />
+              <Input value={form.phone} onChange={set('phone')} error={errors.phone} placeholder="(415) 555-0142" required />
             </Field>
             <Field label="Email" error={errors.email}>
               <Input type="email" value={form.email} onChange={set('email')} error={errors.email} />

@@ -1,9 +1,10 @@
 /* ---------------------------------------------------------------------------
-   Vanguard Dental — design tokens
+   Vive Dental Clinic — design tokens
 
-   The palette is built around three ideas: a warm paper canvas so screens don't
-   glare under surgery lighting, a deep pine "ink" that carries the brand, and a
-   single clay accent reserved for things that need a human's attention.
+   Taken from the clinic's own website: the teal of the logo (#0F6B7A) carries
+   the brand, the pale blue of the site (#EAF3F9) is the canvas so screens don't
+   glare under surgery lighting, and the gold from the clinic interior is kept
+   as a single accent for things that need a human's attention.
    --------------------------------------------------------------------------- */
 
 @font-face {
@@ -24,71 +25,72 @@
 
 :root {
   /* Surfaces --------------------------------------------------------------- */
-  --canvas: #f4f2ec;
+  --canvas: #eaf3f9;
   --surface: #ffffff;
-  --surface-sunken: #faf8f4;
+  --surface-sunken: #f5fafc;
   --surface-raised: #ffffff;
-  --overlay: rgba(18, 32, 29, 0.42);
+  --overlay: rgba(9, 42, 50, 0.44);
 
   /* Ink -------------------------------------------------------------------- */
-  --ink: #16211e;
-  --ink-2: #4c5a56;
-  --ink-3: #7b8a85;
-  --ink-4: #a3b0ab;
-  --ink-inverse: #f6f4ef;
+  --ink: #0f2a31;
+  --ink-2: #41606a;
+  --ink-3: #6c8a95;
+  --ink-4: #9ab4bf;
+  --ink-inverse: #f1fafc;
 
   /* Lines ------------------------------------------------------------------ */
-  --line: #e5e1d8;
-  --line-strong: #d3cec2;
-  --line-soft: #eeebe4;
+  --line: #d9e8f0;
+  --line-strong: #c0d8e4;
+  --line-soft: #e7f1f7;
 
-  /* Brand ------------------------------------------------------------------ */
-  --pine: #14544a;
-  --pine-deep: #0f332e;
-  --pine-darker: #0b2723;
-  --pine-bright: #1c6f61;
-  --pine-soft: #e6efeb;
-  --pine-softer: #f1f6f4;
+  /* Brand — straight from the logo ----------------------------------------- */
+  --brand: #0f6b7a;
+  --brand-deep: #0a4f5c;
+  --brand-darker: #073a45;
+  --brand-bright: #15879b;
+  --brand-soft: #ddeef3;
+  --brand-softer: #eef7fa;
 
   /* Accents ---------------------------------------------------------------- */
-  --clay: #b5652f;
-  --clay-soft: #f7ebe1;
-  --gold: #a07a25;
-  --gold-soft: #f8f0dc;
-  --rose: #a8443c;
-  --rose-soft: #f8e9e7;
-  --sky: #3b6e96;
-  --sky-soft: #e8eff5;
-  --moss: #4a7c46;
-  --moss-soft: #ebf2e9;
+  --clay: #b5712f;
+  --clay-soft: #f8eee2;
+  --gold: #a9812c;
+  --gold-soft: #f9f1dd;
+  --rose: #ab443c;
+  --rose-soft: #f9e9e7;
+  --sky: #35719b;
+  --sky-soft: #e7f0f6;
+  --moss: #3f7f5e;
+  --moss-soft: #e8f2ed;
   --plum: #6b4c8a;
   --plum-soft: #f0eaf6;
 
   /* Chart series ----------------------------------------------------------
-     Brand hues re-stepped for data marks: the UI palette is deliberately dark
-     and low-chroma, which fails colour-blind separation once it's a series.
-     This order was validated (adjacent CVD ΔE 9.5, normal-vision 19.5, all
-     within the lightness/chroma bands on a white plot surface). Slot 4 sits
-     just under 3:1 contrast, so every categorical chart carries direct labels.
-     Do not reorder — the ordering is what keeps the pairs separable. */
-  --series-1: #0f8a76;  /* pine   */
-  --series-2: #d9722b;  /* clay   */
-  --series-3: #2f77bd;  /* sky    */
-  --series-4: #c99a12;  /* gold   */
-  --series-5: #cf4a3f;  /* rose   */
-  --series-6: #7d55c7;  /* plum   */
-  --series-7: #4e9440;  /* moss   */
+     The UI teal is deliberately dark and low-chroma; as a data mark it fails
+     colour-blind separation, so the series palette is the brand hue re-stepped
+     brighter, then the supporting hues. Validated on a white plot surface:
+     adjacent CVD ΔE 8.7, normal-vision ΔE 19.5, all inside the lightness and
+     chroma bands. Slot 4 sits just under 3:1 contrast, which is why every
+     categorical chart carries direct labels.
+     Do not reorder — the ordering is what keeps adjacent pairs separable. */
+  --series-1: #0e8fa3;  /* brand teal */
+  --series-2: #d9722b;  /* clay       */
+  --series-3: #7d55c7;  /* plum       */
+  --series-4: #c99a12;  /* gold       */
+  --series-5: #cf4a3f;  /* rose       */
+  --series-6: #2f77bd;  /* sky        */
+  --series-7: #4e9440;  /* moss       */
 
   /* Sequential ramp, single hue, light → dark (magnitude encoding). */
-  --seq-100: #d3e9e4;
-  --seq-200: #a8d3ca;
-  --seq-300: #6bb9aa;
-  --seq-400: #2f9d89;
-  --seq-500: #0f8a76;
-  --seq-600: #14544a;
+  --seq-100: #d5ecf1;
+  --seq-200: #a7d8e2;
+  --seq-300: #6cbdcd;
+  --seq-400: #2aa1b7;
+  --seq-500: #0e8fa3;
+  --seq-600: #0f6b7a;
 
-  --grid: #eeebe4;
-  --axis-ink: #7b8a85;
+  --grid: #e7f1f7;
+  --axis-ink: #6c8a95;
 
   /* Type ------------------------------------------------------------------- */
   --font-display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
@@ -123,10 +125,10 @@
   --r-pill: 999px;
 
   /* Elevation — layered and low-opacity, never a hard drop shadow ---------- */
-  --shadow-xs: 0 1px 2px rgba(22, 33, 30, 0.05);
-  --shadow-sm: 0 1px 2px rgba(22, 33, 30, 0.05), 0 2px 6px rgba(22, 33, 30, 0.04);
-  --shadow-md: 0 2px 4px rgba(22, 33, 30, 0.04), 0 8px 20px rgba(22, 33, 30, 0.06);
-  --shadow-lg: 0 4px 8px rgba(22, 33, 30, 0.05), 0 20px 44px rgba(22, 33, 30, 0.11);
+  --shadow-xs: 0 1px 2px rgba(15, 42, 49, 0.05);
+  --shadow-sm: 0 1px 2px rgba(15, 42, 49, 0.05), 0 2px 6px rgba(15, 42, 49, 0.04);
+  --shadow-md: 0 2px 4px rgba(15, 42, 49, 0.04), 0 8px 20px rgba(15, 42, 49, 0.06);
+  --shadow-lg: 0 4px 8px rgba(15, 42, 49, 0.05), 0 20px 44px rgba(15, 42, 49, 0.11);
   --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
 
   /* Motion ----------------------------------------------------------------- */

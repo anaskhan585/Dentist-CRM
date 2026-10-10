@@ -50,13 +50,14 @@ const NAV = [
   },
 ];
 
-function Wordmark() {
+/** The "v" and swoosh lifted from the Vive logo, as a square mark for the rail. */
+function ViveMark() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 3.4c-1.9 0-2.9.8-4.7.8-2.1 0-4 1.7-4 4.8 0 3.6 1.1 6.2 2 8.6.8 2.1 1.4 5 3.1 5 1.5 0 1.7-1.9 1.9-3.6.2-1.5.6-2.7 1.7-2.7s1.5 1.2 1.7 2.7c.2 1.7.4 3.6 1.9 3.6 1.7 0 2.3-2.9 3.1-5 .9-2.4 2-5 2-8.6 0-3.1-1.9-4.8-4-4.8-1.8 0-2.8-.8-4.7-.8Z"
-        fill="var(--pine-deep)"
-      />
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <g stroke="var(--brand)" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.5 8 L16 16.5 L21.5 8" strokeWidth="3.2" />
+        <path d="M4.5 19 C 7 27, 25 28, 27.5 17.5" strokeWidth="3" />
+      </g>
     </svg>
   );
 }
@@ -73,10 +74,10 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, counts = {}, 
     <aside className="sidebar">
       <div className="sidebar__brand">
         <span className="sidebar__mark">
-          <Wordmark />
+          <ViveMark />
         </span>
         <div className="sidebar__wordmark">
-          <strong>{clinicName ?? 'Vanguard Dental'}</strong>
+          <img src="/brand/vive-logo-white.png" alt={clinicName ?? 'Vive Dental Clinic'} />
           <span>Practice CRM</span>
         </div>
       </div>

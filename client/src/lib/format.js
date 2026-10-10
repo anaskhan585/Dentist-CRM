@@ -72,7 +72,7 @@ export function age(dateOfBirth) {
 }
 
 /** Deterministic accent per person so avatars stay stable between renders. */
-const AVATAR_COLOURS = ['#14544a', '#8c5a2b', '#3d6e96', '#6b4c8a', '#4a7c46', '#a07a25', '#a8443c'];
+const AVATAR_COLOURS = ['#0f6b7a', '#b5712f', '#35719b', '#6b4c8a', '#3f7f5e', '#a9812c', '#ab443c'];
 
 export function colourFor(seed = '') {
   let hash = 0;

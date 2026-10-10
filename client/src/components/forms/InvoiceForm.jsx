@@ -7,15 +7,15 @@ import { Button, Field, Input, Modal, Select, Textarea } from '../ui/index.jsx';
 import { DentistSelect, PatientPicker, useSettings } from './pickers.jsx';
 
 const PRICE_LIST = [
-  { description: 'Consultation', unitPrice: 2000 },
-  { description: 'Scaling & Polishing', unitPrice: 6500 },
-  { description: 'Composite Filling', unitPrice: 5500 },
-  { description: 'Root Canal', unitPrice: 22000 },
-  { description: 'Crown Fitting', unitPrice: 35000 },
-  { description: 'Extraction', unitPrice: 4500 },
-  { description: 'Implant', unitPrice: 145000 },
-  { description: 'Teeth Whitening', unitPrice: 18000 },
-  { description: 'Denture Fitting', unitPrice: 48000 },
+  { description: 'Consultation', unitPrice: 75 },
+  { description: 'Scaling & Polishing', unitPrice: 120 },
+  { description: 'Composite Filling', unitPrice: 180 },
+  { description: 'Root Canal', unitPrice: 950 },
+  { description: 'Crown Fitting', unitPrice: 1200 },
+  { description: 'Extraction', unitPrice: 220 },
+  { description: 'Implant', unitPrice: 3500 },
+  { description: 'Teeth Whitening', unitPrice: 450 },
+  { description: 'Denture Fitting', unitPrice: 1400 },
 ];
 
 const blankItem = () => ({ description: '', quantity: 1, unitPrice: 0, discount: 0 });

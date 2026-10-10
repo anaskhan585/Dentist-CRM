@@ -34,14 +34,14 @@ export const RECORD_TYPES = {
 };
 
 export const TOOTH_STATUS = {
-  healthy: { label: 'Healthy', colour: '#ffffff', ink: '#4c5a56' },
-  caries: { label: 'Caries', colour: '#b5652f', ink: '#ffffff' },
-  filled: { label: 'Filled', colour: '#3b6e96', ink: '#ffffff' },
-  crown: { label: 'Crown', colour: '#a07a25', ink: '#ffffff' },
+  healthy: { label: 'Healthy', colour: '#ffffff', ink: '#41606a' },
+  caries: { label: 'Caries', colour: '#b5712f', ink: '#ffffff' },
+  filled: { label: 'Filled', colour: '#35719b', ink: '#ffffff' },
+  crown: { label: 'Crown', colour: '#a9812c', ink: '#ffffff' },
   'root-canal': { label: 'Root canal', colour: '#6b4c8a', ink: '#ffffff' },
-  implant: { label: 'Implant', colour: '#14544a', ink: '#ffffff' },
-  missing: { label: 'Missing', colour: '#d3cec2', ink: '#4c5a56' },
-  watch: { label: 'Watch', colour: '#f0d68a', ink: '#4c5a56' },
+  implant: { label: 'Implant', colour: '#0f6b7a', ink: '#ffffff' },
+  missing: { label: 'Missing', colour: '#c0d8e4', ink: '#41606a' },
+  watch: { label: 'Watch', colour: '#f0d68a', ink: '#41606a' },
 };
 
 export const ROLES = {

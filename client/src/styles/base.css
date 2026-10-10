@@ -62,14 +62,14 @@ h1, h2, h3, h4 {
 }
 
 :focus-visible {
-  outline: 2px solid var(--pine-bright);
+  outline: 2px solid var(--brand-bright);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 ::selection {
-  background: var(--pine-soft);
-  color: var(--pine-deep);
+  background: var(--brand-soft);
+  color: var(--brand-deep);
 }
 
 /* Scrollbars: present but quiet. */

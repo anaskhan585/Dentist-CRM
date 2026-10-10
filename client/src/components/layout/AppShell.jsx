@@ -8,7 +8,7 @@ import PatientForm from '../forms/PatientForm.jsx';
 import InvoiceForm from '../forms/InvoiceForm.jsx';
 import { get } from '../../lib/api.js';
 
-const COLLAPSE_KEY = 'vanguard.sidebar-collapsed';
+const COLLAPSE_KEY = 'vive.sidebar-collapsed';
 
 export default function AppShell() {
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === 'true');

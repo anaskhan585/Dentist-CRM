@@ -89,7 +89,7 @@ export default function Reports() {
         ['Clinician', 'Appointments', 'Chair hours'],
         ...dentists.map((entry) => [entry.label, entry.value, entry.hours]),
       ],
-      `vanguard-report-${dayjs().format('YYYY-MM-DD')}.csv`
+      `vive-dental-report-${dayjs().format('YYYY-MM-DD')}.csv`
     );
   };
 

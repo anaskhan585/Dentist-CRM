@@ -1,4 +1,4 @@
-# Vanguard Dental — Practice CRM
+# Vive Dental Clinic — Practice CRM
 
 A practice-management CRM for dental clinics, built on the MERN stack. It covers
 the working day of a clinic: the diary, patient files, clinical notes, lab work,
@@ -10,6 +10,9 @@ same order — so nobody has to relearn where anything lives.
 ---
 
 ## Getting started
+
+**New to Node projects?** Follow [SETUP.md](SETUP.md) instead — it walks through
+installing Node, getting a free database and running the app, step by step.
 
 **Requirements:** Node 18.18+ and a MongoDB instance (local, or a MongoDB Atlas
 connection string).
@@ -31,7 +34,7 @@ npm run dev
 Open http://localhost:5173 and sign in with the seeded administrator:
 
 ```
-ayesha@vanguarddental.pk  /  Vanguard@2024
+olivia@vive.dental  /  ViveDental@2024
 ```
 
 Every seeded account uses the same password. `npm run seed -- --keep` only seeds
@@ -110,9 +113,16 @@ deactivate — clinical and financial history stays intact.
 
 ## Design notes
 
-The palette is a warm paper canvas (`#f4f2ec`) against a deep pine ink, with a
-single clay accent reserved for things that genuinely need attention. Type is
-**Fraunces** for display and **Plus Jakarta Sans** for the interface.
+The palette comes from the clinic's own website: the teal of the logo
+(`#0f6b7a`) carries the brand, the site's pale blue (`#eaf3f9`) is the canvas,
+and the gold from the clinic interior is held back for things that genuinely
+need attention. Type is **Archivo** for headings and metric figures and
+**Plus Jakarta Sans** for the interface, both self-hosted as variable woff2.
+
+The supplied logos live in `client/public/brand/` — the white wordmark is used
+on the teal sidebar and sign-in panel, and the square "v" mark (`favicon.svg`,
+mirrored as a component in `Sidebar.jsx`) is used in the collapsed rail and the
+browser tab.
 
 Chart series colours are a separate, brighter set from the UI palette: the UI
 greens are deliberately dark and low-chroma, which fails colour-blind separation

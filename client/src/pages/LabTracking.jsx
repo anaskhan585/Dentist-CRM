@@ -13,7 +13,10 @@ import { IconAlert, IconLab, IconPlus } from '../lib/icons.jsx';
 function dueLabel(labCase) {
   const due = dayjs(labCase.dueAt);
   const days = due.diff(dayjs().startOf('day'), 'day');
-  if (labCase.stage === 'delivered') return { text: `Delivered`, tone: 'moss' };
+  // Once the work is back with us the due date no longer matters — keep this in
+  // step with the model's isOverdue and the dashboard's overdue count.
+  if (labCase.stage === 'delivered') return { text: 'Delivered', tone: 'moss' };
+  if (labCase.stage === 'received') return { text: 'Back in practice', tone: 'moss' };
   if (days < 0) return { text: `${Math.abs(days)}d overdue`, tone: 'rose' };
   if (days === 0) return { text: 'Due today', tone: 'clay' };
   if (days === 1) return { text: 'Due tomorrow', tone: 'gold' };

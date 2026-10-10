@@ -99,7 +99,7 @@ function DayView({ appointments, chairs, dayStart, dayEnd, onEdit }) {
                       style={{
                         top: Math.max(0, offset),
                         height,
-                        '--slot-colour': appointment.dentist?.colour ?? 'var(--pine)',
+                        '--slot-colour': appointment.dentist?.colour ?? 'var(--brand)',
                       }}
                       onClick={() => onEdit(appointment)}
                       title={`${time(appointment.startAt)} · ${fullName(appointment.patient)} · ${appointment.treatment}`}

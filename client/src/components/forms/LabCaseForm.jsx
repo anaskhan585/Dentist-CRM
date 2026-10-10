@@ -6,7 +6,7 @@ import { LAB_STAGES, WORK_TYPES } from '../../lib/constants.js';
 import { Button, Field, Input, Modal, Select, Textarea } from '../ui/index.jsx';
 import { DentistSelect, PatientPicker } from './pickers.jsx';
 
-const LABS = ['Precision Dental Lab', 'Smile Craft Ceramics', 'OrthoWorks Karachi'];
+const LABS = ['Precision Dental Lab', 'Summit Ceramics Studio', 'Northgate Ortho Lab'];
 const SHADES = ['A1', 'A2', 'A3', 'A3.5', 'A4', 'B1', 'B2', 'B3', 'C1', 'C2', 'D2'];
 
 const BLANK = {

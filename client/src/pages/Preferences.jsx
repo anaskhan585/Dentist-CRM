@@ -17,7 +17,7 @@ const SECTIONS = [
 ];
 
 /** Same set the Users screen offers, so diary colours stay consistent. */
-const AVATAR_COLOURS = ['#14544a', '#8c5a2b', '#3d6e96', '#6b4c8a', '#4a7c46', '#a07a25', '#a8443c'];
+const AVATAR_COLOURS = ['#0f6b7a', '#b5712f', '#35719b', '#6b4c8a', '#3f7f5e', '#a9812c', '#ab443c'];
 
 const blankProfile = { name: '', email: '', phone: '', specialty: '', colour: AVATAR_COLOURS[0] };
 

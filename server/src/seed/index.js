@@ -58,7 +58,7 @@ async function run() {
       ...appointment,
       patient: createdPatients[appointment.patientIndex]._id,
       dentist: createdUsers[appointment.dentistIndex]._id,
-      createdBy: createdUsers[5]._id,
+      createdBy: createdUsers[data.FRONT_DESK_INDEX]._id,
     }))
   );
   console.log(`[seed] ${createdAppointments.length} appointments`);
