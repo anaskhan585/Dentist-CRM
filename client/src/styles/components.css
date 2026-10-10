@@ -324,6 +324,27 @@
   color: var(--ink-3);
 }
 
+/* Keep the row's actions pinned to the right edge. A narrow screen scrolls
+   this table sideways, and delete must never be the thing that scrolls away. */
+.table--sticky-actions tbody td:last-child,
+.table--sticky-actions thead th:last-child {
+  position: sticky;
+  right: 0;
+  background: var(--surface);
+  /* Reads as a pinned column rather than text sliding underneath. */
+  box-shadow: -10px 0 10px -10px rgba(15, 42, 49, 0.22);
+}
+
+.table--sticky-actions thead th:last-child {
+  z-index: 2;
+  background: var(--surface-sunken);
+}
+
+.table--sticky-actions tbody tr:hover td:last-child,
+.table--sticky-actions tbody tr:focus-visible td:last-child {
+  background: var(--surface-sunken);
+}
+
 /* A row's actions sit on one line, right up against the edge of the table. */
 .row-actions {
   display: flex;

@@ -81,7 +81,10 @@ export const getPatient = asyncHandler(async (req, res) => {
     Appointment.find({ patient: patient._id }).populate('dentist', 'name colour avatarInitials').sort({ startAt: -1 }).limit(20).lean({ virtuals: true }),
     HealthRecord.find({ patient: patient._id }).populate('author', 'name colour avatarInitials').sort({ recordedAt: -1 }).limit(20).lean(),
     canSeeBilling
-      ? Invoice.find({ patient: patient._id }).sort({ issuedAt: -1 }).limit(20).lean({ virtuals: true })
+      ? Invoice.find({ patient: patient._id, status: { $ne: 'void' } })
+          .sort({ issuedAt: -1 })
+          .limit(20)
+          .lean({ virtuals: true })
       : [],
     LabCase.find({ patient: patient._id }).sort({ dueAt: -1 }).limit(10).lean({ virtuals: true }),
   ]);

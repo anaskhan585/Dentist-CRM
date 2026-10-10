@@ -509,13 +509,14 @@ export default function PatientDetail() {
           </CardHead>
           {invoices.length ? (
             <div className="table-wrap">
-              <table className="table table--clickable">
+              <table className="table table--clickable table--sticky-actions">
                 <thead>
                   <tr>
                     <th>Invoice</th>
                     <th>Issued</th>
                     <th>Items</th>
                     <th className="table__num">Total</th>
+                    <th className="table__num">Paid</th>
                     <th className="table__num">Balance</th>
                     <th>Status</th>
                     <th aria-label="Actions" />
@@ -544,6 +545,7 @@ export default function PatientDetail() {
                         {invoice.items?.map((item) => item.description).join(', ')}
                       </td>
                       <td className="table__num">{money(invoice.total, { symbol })}</td>
+                      <td className="table__num muted">{money(invoice.amountPaid, { symbol })}</td>
                       <td className="table__num">
                         {invoice.status === 'void' ? (
                           <span className="muted">—</span>

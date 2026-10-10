@@ -176,7 +176,7 @@ export default function Invoices() {
             }}
             aria-label="Filter by status"
           >
-            <option value="">Any status</option>
+            <option value="">Open invoices</option>
             {Object.entries(INVOICE_STATUS).map(([key, meta]) => (
               <option key={key} value={key}>
                 {meta.label}
@@ -192,13 +192,14 @@ export default function Invoices() {
         </div>
 
         <div className="table-wrap">
-          <table className="table table--clickable">
+          <table className="table table--clickable table--sticky-actions">
             <thead>
               <tr>
                 <th>Invoice</th>
                 <th>Patient</th>
                 <th>Issued</th>
                 <th className="table__num">Total</th>
+                <th className="table__num">Paid</th>
                 <th className="table__num">Balance</th>
                 <th>Status</th>
                 <th aria-label="Actions" />
@@ -206,7 +207,7 @@ export default function Invoices() {
             </thead>
 
             {isLoading ? (
-              <TableSkeleton cols={7} rows={8} />
+              <TableSkeleton cols={8} rows={8} />
             ) : (
               <tbody>
                 {invoices.map((invoice) => (
@@ -247,6 +248,7 @@ export default function Invoices() {
                     </td>
                     <td className="muted table__nowrap">{date(invoice.issuedAt, 'D MMM YYYY')}</td>
                     <td className="table__num">{money(invoice.total, { symbol })}</td>
+                    <td className="table__num muted">{money(invoice.amountPaid, { symbol })}</td>
                     <td className="table__num">
                       {invoice.status === 'void' ? (
                         <span className="muted">—</span>

@@ -115,7 +115,9 @@ async function summarise(filter) {
 export const listInvoices = asyncHandler(async (req, res) => {
   const { page, limit, skip } = paginate(req.query);
   const filter = {};
-  if (req.query.status) filter.status = req.query.status;
+  // A cancelled invoice is off the books, so it leaves the list the way a
+  // deleted record would. Asking for it by status still brings it back.
+  filter.status = req.query.status || { $ne: 'void' };
   if (req.query.patient) {
     if (!mongoose.isValidObjectId(req.query.patient)) throw ApiError.badRequest('Invalid patient id');
     // Cast it here: find() would do this itself, but the aggregate in

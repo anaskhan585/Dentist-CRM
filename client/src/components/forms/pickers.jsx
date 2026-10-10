@@ -65,9 +65,13 @@ export function PatientPicker({ value, onChange, error, placeholder = 'Search by
   });
 
   // Resolve the selected id back to a name when the form opens pre-filled.
+  // This shares a cache entry with the patient file page, so it has to cache
+  // the whole payload and narrow it here — unwrapping inside queryFn wrote a
+  // bare patient over the file's bundle and left that page "not found".
   const { data: selected } = useQuery({
     queryKey: ['patients', value],
-    queryFn: () => get(`/patients/${value}`).then((payload) => payload.patient),
+    queryFn: () => get(`/patients/${value}`),
+    select: (payload) => payload?.patient,
     enabled: Boolean(value),
     staleTime: 60000,
   });
