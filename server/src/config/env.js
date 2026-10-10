@@ -18,7 +18,10 @@ export const env = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   clientOrigin: (process.env.CLIENT_ORIGIN ?? 'http://localhost:5173')
     .split(',')
-    .map((origin) => origin.trim())
+    // A browser sends an Origin with no trailing slash, so a hosting panel
+    // filled in as "https://example.com/" would never match and every request
+    // would fail CORS. Normalise rather than make that a deployment trap.
+    .map((origin) => origin.trim().replace(/\/+$/, ''))
     .filter(Boolean),
 };
 
