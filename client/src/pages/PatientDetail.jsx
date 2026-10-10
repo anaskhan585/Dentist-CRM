@@ -44,7 +44,7 @@ const TABS = [
   { key: 'chart', label: 'Dental chart' },
   { key: 'records', label: 'Health records' },
   { key: 'appointments', label: 'Appointments' },
-  { key: 'billing', label: 'Billing' },
+  { key: 'billing', label: 'Billing', adminOnly: true },
   { key: 'lab', label: 'Lab work' },
 ];
 
@@ -128,7 +128,7 @@ function ToothModal({ tooth, entry, patientId, onClose }) {
 export default function PatientDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { canChart } = useAuth();
+  const { canChart, isAdmin } = useAuth();
   const [tab, setTab] = useState('overview');
   const [editing, setEditing] = useState(false);
   const [booking, setBooking] = useState(false);
@@ -242,7 +242,7 @@ export default function PatientDetail() {
       </Card>
 
       <nav className="tabs" aria-label="Patient sections">
-        {TABS.map((item) => (
+        {TABS.filter((item) => !item.adminOnly || isAdmin).map((item) => (
           <button key={item.key} className="tabs__tab" aria-current={tab === item.key} onClick={() => setTab(item.key)}>
             {item.label}
             {item.key === 'records' && records.length > 0 && <span className="tabs__count numeric">{records.length}</span>}
@@ -484,7 +484,7 @@ export default function PatientDetail() {
         </Card>
       )}
 
-      {tab === 'billing' && (
+      {tab === 'billing' && isAdmin && (
         <Card flush>
           <CardHead title="Invoices" sub={`Outstanding balance ${money(patient.balance, { symbol })}`}>
             <Button size="sm" icon={IconPlus} variant="primary" onClick={() => setInvoicing(true)}>

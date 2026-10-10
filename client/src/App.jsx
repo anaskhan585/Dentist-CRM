@@ -17,6 +17,7 @@ const Users = lazy(() => import('./pages/Users.jsx'));
 const Messages = lazy(() => import('./pages/Messages.jsx'));
 const Preferences = lazy(() => import('./pages/Preferences.jsx'));
 const Reports = lazy(() => import('./pages/Reports.jsx'));
+const Invoices = lazy(() => import('./pages/Invoices.jsx'));
 
 function Splash() {
   return (
@@ -32,6 +33,26 @@ function RequireAuth({ children }) {
 
   if (status === 'loading') return <Splash />;
   if (status === 'guest') return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  return children;
+}
+
+/**
+ * Billing is limited to administrators. The sidebar hides the link, but someone
+ * could still type the address, so the route refuses it too — and the API
+ * refuses the underlying requests regardless.
+ */
+function RequireAdmin({ children }) {
+  const { status, isAdmin } = useAuth();
+
+  if (status === 'loading') return <Splash />;
+  if (!isAdmin) {
+    return (
+      <EmptyState
+        title="Administrators only"
+        text="Invoices and billing are limited to administrator accounts. Ask the practice owner if you need access."
+      />
+    );
+  }
   return children;
 }
 
@@ -128,6 +149,16 @@ export default function App() {
             <Suspense fallback={<Splash />}>
               <Reports />
             </Suspense>
+          }
+        />
+        <Route
+          path="invoices"
+          element={
+            <RequireAdmin>
+              <Suspense fallback={<Splash />}>
+                <Invoices />
+              </Suspense>
+            </RequireAdmin>
           }
         />
         <Route path="*" element={<NotFound />} />

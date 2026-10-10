@@ -41,7 +41,7 @@ export default function Topbar({ onOpenMobile, onNewAppointment, onNewPatient, o
   const [focused, setFocused] = useState(false);
   const inputRef = useRef(null);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const { data: results, isFetching } = useSearch(term);
 
   // ⌘K / Ctrl-K jumps to search from anywhere.
@@ -127,9 +127,11 @@ export default function Topbar({ onOpenMobile, onNewAppointment, onNewPatient, o
           <button className="menu__item" onClick={onNewPatient}>
             <IconPatients /> Patient
           </button>
-          <button className="menu__item" onClick={onNewInvoice}>
-            <IconBilling /> Invoice
-          </button>
+          {isAdmin && (
+            <button className="menu__item" onClick={onNewInvoice}>
+              <IconBilling /> Invoice
+            </button>
+          )}
         </Dropdown>
 
         <div className="topbar__divider" />

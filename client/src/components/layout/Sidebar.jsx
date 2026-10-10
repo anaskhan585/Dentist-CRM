@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import {
+  IconBilling,
   IconCalendar,
   IconChevronLeft,
   IconDashboard,
@@ -44,6 +45,8 @@ const NAV = [
     items: [
       { to: '/users', label: 'Users', icon: IconUsers },
       { to: '/messages', label: 'Messages', icon: IconMessages, badge: 'messages' },
+      // Billing is the practice owner's business — hidden from everyone else.
+      { to: '/invoices', label: 'Invoices', icon: IconBilling, adminOnly: true },
       { to: '/preferences', label: 'Preferences', icon: IconPreferences },
       { to: '/reports', label: 'Reports', icon: IconReports },
     ],
@@ -63,7 +66,7 @@ function ViveMark() {
 }
 
 export default function Sidebar({ collapsed, onToggle, onNavigate, counts = {}, clinicName }) {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const badgeFor = (key) => {
     const value = counts[key];
@@ -93,34 +96,39 @@ export default function Sidebar({ collapsed, onToggle, onNavigate, counts = {}, 
       </button>
 
       <nav className="sidebar__scroll" aria-label="Main">
-        {NAV.map((group) => (
-          <div key={group.section}>
-            <p className="sidebar__section">{group.section}</p>
-            {group.items.map((item) => {
-              const badge = item.badge ? badgeFor(item.badge) : null;
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  data-tip={item.label}
-                  onClick={onNavigate}
-                  className={({ isActive }) => `nav-item${isActive ? ' is-active' : ''}`}
-                >
-                  <span className="nav-item__icon">
-                    <item.icon />
-                  </span>
-                  <span className="nav-item__label">{item.label}</span>
-                  {badge && (
-                    <span className="nav-item__badge" data-tone={item.badge === 'lab' ? 'alert' : undefined}>
-                      {badge > 99 ? '99+' : badge}
+        {NAV.map((group) => {
+          const items = group.items.filter((item) => !item.adminOnly || isAdmin);
+          if (!items.length) return null;
+
+          return (
+            <div key={group.section}>
+              <p className="sidebar__section">{group.section}</p>
+              {items.map((item) => {
+                const badge = item.badge ? badgeFor(item.badge) : null;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    data-tip={item.label}
+                    onClick={onNavigate}
+                    className={({ isActive }) => `nav-item${isActive ? ' is-active' : ''}`}
+                  >
+                    <span className="nav-item__icon">
+                      <item.icon />
                     </span>
-                  )}
-                </NavLink>
-              );
-            })}
-          </div>
-        ))}
+                    <span className="nav-item__label">{item.label}</span>
+                    {badge && (
+                      <span className="nav-item__badge" data-tone={item.badge === 'lab' ? 'alert' : undefined}>
+                        {badge > 99 ? '99+' : badge}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          );
+        })}
       </nav>
 
       <div className="sidebar__footer">

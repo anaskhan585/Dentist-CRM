@@ -127,6 +127,15 @@ export default function InvoiceForm({ open, onClose, patientId }) {
           {errors.items && <p className="field__error" style={{ marginBottom: 'var(--sp-3)' }}>{errors.items}</p>}
 
           <div className="line-items">
+            {/* Column headings — the inputs alone gave no clue what each number was. */}
+            <div className="line-items__head">
+              <span className="line-items__head-desc">Treatment or item</span>
+              <span className="line-item__qty">Qty</span>
+              <span className="line-item__price">Unit price</span>
+              <span className="line-item__price">Discount</span>
+              <span className="line-items__head-spacer" aria-hidden="true" />
+            </div>
+
             {form.items.map((item, index) => (
               <div className="line-item" key={index}>
                 <div style={{ flex: 1, minWidth: 180 }}>
@@ -134,6 +143,7 @@ export default function InvoiceForm({ open, onClose, patientId }) {
                     className="input"
                     list="price-list"
                     value={item.description}
+                    aria-label={`Treatment or item for line ${index + 1}`}
                     placeholder="Treatment or item"
                     onChange={(event) => {
                       const { value } = event.target;

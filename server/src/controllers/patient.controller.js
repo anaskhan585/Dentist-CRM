@@ -73,10 +73,16 @@ export const getPatient = asyncHandler(async (req, res) => {
     .lean({ virtuals: true });
   if (!patient) throw ApiError.notFound('Patient not found');
 
+  // Billing is administrator-only, so the file simply carries no invoices for
+  // anyone else rather than relying on the client to hide them.
+  const canSeeBilling = req.user.role === 'admin';
+
   const [appointments, records, invoices, labCases] = await Promise.all([
     Appointment.find({ patient: patient._id }).populate('dentist', 'name colour avatarInitials').sort({ startAt: -1 }).limit(20).lean({ virtuals: true }),
     HealthRecord.find({ patient: patient._id }).populate('author', 'name colour avatarInitials').sort({ recordedAt: -1 }).limit(20).lean(),
-    Invoice.find({ patient: patient._id }).sort({ issuedAt: -1 }).limit(20).lean({ virtuals: true }),
+    canSeeBilling
+      ? Invoice.find({ patient: patient._id }).sort({ issuedAt: -1 }).limit(20).lean({ virtuals: true })
+      : [],
     LabCase.find({ patient: patient._id }).sort({ dueAt: -1 }).limit(10).lean({ virtuals: true }),
   ]);
 
