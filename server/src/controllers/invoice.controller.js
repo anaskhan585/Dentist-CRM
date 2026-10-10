@@ -43,7 +43,10 @@ async function nextInvoiceNo() {
 /** Derives status from what has actually been paid, then syncs the patient balance. */
 async function reconcile(invoice) {
   if (invoice.status !== 'void' && invoice.status !== 'draft') {
-    if (invoice.amountPaid <= 0) invoice.status = 'unpaid';
+    // Nothing to collect is settled, not unpaid — a fully discounted or
+    // zero-value invoice must not sit in the outstanding column forever.
+    if (invoice.total <= 0) invoice.status = 'paid';
+    else if (invoice.amountPaid <= 0) invoice.status = 'unpaid';
     else if (invoice.amountPaid < invoice.total) invoice.status = 'partial';
     else {
       invoice.status = 'paid';

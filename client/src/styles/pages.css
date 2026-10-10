@@ -782,6 +782,19 @@
   color: var(--ink);
 }
 
+/* The discount column kept being read as "what the patient paid". */
+.line-items__note {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+.line-items__note em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
 .line-items {
   display: grid;
   gap: var(--sp-2);

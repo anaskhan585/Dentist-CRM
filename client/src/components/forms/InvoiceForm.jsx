@@ -192,6 +192,11 @@ export default function InvoiceForm({ open, onClose, patientId, invoice = null }
 
           {errors.items && <p className="field__error" style={{ marginBottom: 'var(--sp-3)' }}>{errors.items}</p>}
 
+          <p className="line-items__note">
+            Discount is money taken <em>off</em> the price. What the patient actually handed over goes in
+            “Amount paid” below.
+          </p>
+
           <div className="line-items">
             {/* Column headings — the inputs alone gave no clue what each number was. */}
             <div className="line-items__head">
@@ -243,8 +248,10 @@ export default function InvoiceForm({ open, onClose, patientId, invoice = null }
                   className="input line-item__price numeric"
                   type="number"
                   min="0"
+                  max={(Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)}
                   value={item.discount}
-                  aria-label="Discount"
+                  aria-label="Discount off this line"
+                  title="Money off the price — not the amount the patient paid"
                   onChange={(event) => setItem(index, 'discount', event.target.value)}
                 />
                 <button
