@@ -21,8 +21,12 @@ export function createApp() {
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin || env.clientOrigin.includes(origin)) return callback(null, true);
-        return callback(new Error('Not allowed by CORS'));
+        // Withhold the header rather than throw. Throwing turns every request
+        // carrying an unexpected Origin into a 500 — including the browser's
+        // own fetch of a <script crossorigin> or a preloaded font from this
+        // very site, which is same-origin and needs no CORS header at all.
+        // Denying the header still blocks a genuine cross-origin reader.
+        callback(null, !origin || env.clientOrigin.includes(origin));
       },
       credentials: true,
     })
