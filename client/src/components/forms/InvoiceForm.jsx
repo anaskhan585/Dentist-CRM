@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { del, patch, post } from '../../lib/api.js';
+import { patch, post } from '../../lib/api.js';
 import { useSaveMutation } from '../../lib/useSaveMutation.js';
 import { date, money } from '../../lib/format.js';
 import { IconPlus, IconTrash } from '../../lib/icons.jsx';
@@ -72,13 +72,6 @@ export default function InvoiceForm({ open, onClose, patientId, invoice = null }
     onSuccess: onClose,
   });
 
-  const voidInvoice = useSaveMutation({
-    mutationFn: () => del(`/invoices/${invoice._id}`),
-    invalidate: ['invoices', 'patients', 'dashboard'],
-    successMessage: 'Invoice voided',
-    onSuccess: onClose,
-  });
-
   const setItem = (index, key, value) =>
     setForm((current) => ({
       ...current,
@@ -132,16 +125,6 @@ export default function InvoiceForm({ open, onClose, patientId, invoice = null }
               {money(total, { symbol })}
             </p>
           </div>
-          {editing && invoice.status !== 'void' && (
-            <Button
-              variant="ghost"
-              data-tone="danger"
-              loading={voidInvoice.isPending}
-              onClick={() => voidInvoice.mutate()}
-            >
-              Void
-            </Button>
-          )}
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>

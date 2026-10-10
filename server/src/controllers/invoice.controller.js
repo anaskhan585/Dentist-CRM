@@ -159,7 +159,15 @@ export const createInvoice = asyncHandler(async (req, res) => {
   if (!payload.appointment) delete payload.appointment;
 
   const invoice = await Invoice.create(payload);
-  await reconcile(invoice);
+
+  // The invoice is on disk from here on. Reporting a failure now would be a
+  // lie, and the retry it provokes raises a second invoice for the same work —
+  // so a balance sync that falls over is logged, not thrown.
+  try {
+    await reconcile(invoice);
+  } catch (error) {
+    console.error(`Invoice ${invoice.invoiceNo} saved, but the patient balance did not sync:`, error);
+  }
 
   const populated = await invoice.populate({ path: 'patient', select: 'firstName lastName fileNo phone' });
   res.status(201).json({ success: true, data: populated });

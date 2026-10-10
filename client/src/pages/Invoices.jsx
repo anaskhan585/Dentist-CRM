@@ -7,6 +7,7 @@ import { INVOICE_STATUS } from '../lib/constants.js';
 import { useSaveMutation } from '../lib/useSaveMutation.js';
 import { useSettings } from '../components/forms/pickers.jsx';
 import InvoiceForm from '../components/forms/InvoiceForm.jsx';
+import ConfirmDeleteInvoice from '../components/forms/ConfirmDeleteInvoice.jsx';
 import {
   Avatar,
   Badge,
@@ -21,7 +22,7 @@ import {
   Select,
   TableSkeleton,
 } from '../components/ui/index.jsx';
-import { IconBilling, IconPlus, IconSearch } from '../lib/icons.jsx';
+import { IconBilling, IconPlus, IconSearch, IconTrash } from '../lib/icons.jsx';
 
 /** Takes a payment against one invoice; the server re-derives status and balance. */
 function PaymentModal({ invoice, symbol, onClose }) {
@@ -110,6 +111,7 @@ export default function Invoices() {
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState(null);
   const [paying, setPaying] = useState(null);
+  const [deleting, setDeleting] = useState(null);
 
   const { data: settings } = useSettings();
   const symbol = settings?.locale?.currencySymbol ?? '$';
@@ -196,7 +198,6 @@ export default function Invoices() {
                 <th>Invoice</th>
                 <th>Patient</th>
                 <th>Issued</th>
-                <th>Items</th>
                 <th className="table__num">Total</th>
                 <th className="table__num">Balance</th>
                 <th>Status</th>
@@ -205,7 +206,7 @@ export default function Invoices() {
             </thead>
 
             {isLoading ? (
-              <TableSkeleton cols={8} rows={8} />
+              <TableSkeleton cols={7} rows={8} />
             ) : (
               <tbody>
                 {invoices.map((invoice) => (
@@ -222,8 +223,13 @@ export default function Invoices() {
                       }
                     }}
                   >
-                    <td className="numeric" style={{ fontWeight: 600 }}>
-                      {invoice.invoiceNo}
+                    <td>
+                      <span className="numeric" style={{ fontWeight: 600 }}>
+                        {invoice.invoiceNo}
+                      </span>
+                      <span className="table__sub truncate">
+                        {invoice.items?.map((item) => item.description).join(', ')}
+                      </span>
                     </td>
                     <td>
                       {invoice.patient?._id ? (
@@ -239,16 +245,15 @@ export default function Invoices() {
                         <span className="muted">—</span>
                       )}
                     </td>
-                    <td className="muted">{date(invoice.issuedAt, 'D MMM YYYY')}</td>
-                    <td className="muted truncate" style={{ maxWidth: 220 }}>
-                      {invoice.items?.map((item) => item.description).join(', ')}
-                    </td>
+                    <td className="muted table__nowrap">{date(invoice.issuedAt, 'D MMM YYYY')}</td>
                     <td className="table__num">{money(invoice.total, { symbol })}</td>
                     <td className="table__num">
-                      {invoice.balance > 0 ? (
+                      {invoice.status === 'void' ? (
+                        <span className="muted">—</span>
+                      ) : invoice.balance > 0 ? (
                         <strong style={{ color: 'var(--rose)' }}>{money(invoice.balance, { symbol })}</strong>
                       ) : (
-                        <span className="muted">—</span>
+                        <span className="muted">{money(0, { symbol })}</span>
                       )}
                     </td>
                     <td>
@@ -257,17 +262,34 @@ export default function Invoices() {
                       </Badge>
                     </td>
                     <td>
-                      {invoice.balance > 0 && invoice.status !== 'void' && (
-                        <Button
-                          size="sm"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            setPaying(invoice);
-                          }}
-                        >
-                          Record payment
-                        </Button>
-                      )}
+                      <div className="row-actions">
+                        {invoice.balance > 0 && invoice.status !== 'void' && (
+                          <Button
+                            size="sm"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setPaying(invoice);
+                            }}
+                          >
+                            Record payment
+                          </Button>
+                        )}
+                        {invoice.status !== 'void' && (
+                          <button
+                            type="button"
+                            className="icon-btn"
+                            data-tone="danger"
+                            title="Delete this invoice"
+                            aria-label={`Delete invoice ${invoice.invoiceNo}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setDeleting(invoice);
+                            }}
+                          >
+                            <IconTrash />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -298,6 +320,7 @@ export default function Invoices() {
       <InvoiceForm open={creating} onClose={() => setCreating(false)} />
       {editing && <InvoiceForm open invoice={editing} onClose={() => setEditing(null)} />}
       {paying && <PaymentModal invoice={paying} symbol={symbol} onClose={() => setPaying(null)} />}
+      {deleting && <ConfirmDeleteInvoice invoice={deleting} symbol={symbol} onClose={() => setDeleting(null)} />}
     </>
   );
 }

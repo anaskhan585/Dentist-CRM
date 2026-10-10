@@ -21,7 +21,7 @@ export const INVOICE_STATUS = {
   unpaid: { label: 'Unpaid', tone: 'rose' },
   partial: { label: 'Part paid', tone: 'gold' },
   paid: { label: 'Paid', tone: 'moss' },
-  void: { label: 'Void', tone: 'neutral' },
+  void: { label: 'Cancelled', tone: 'neutral' },
 };
 
 export const RECORD_TYPES = {

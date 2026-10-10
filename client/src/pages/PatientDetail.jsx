@@ -12,6 +12,7 @@ import PatientForm from '../components/forms/PatientForm.jsx';
 import AppointmentForm from '../components/forms/AppointmentForm.jsx';
 import HealthRecordForm from '../components/forms/HealthRecordForm.jsx';
 import InvoiceForm from '../components/forms/InvoiceForm.jsx';
+import ConfirmDeleteInvoice from '../components/forms/ConfirmDeleteInvoice.jsx';
 import {
   Avatar,
   Badge,
@@ -37,6 +38,7 @@ import {
   IconPlus,
   IconRecords,
   IconTooth,
+  IconTrash,
 } from '../lib/icons.jsx';
 
 const TABS = [
@@ -135,12 +137,13 @@ export default function PatientDetail() {
   const [recording, setRecording] = useState(false);
   const [invoicing, setInvoicing] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
+  const [deletingInvoice, setDeletingInvoice] = useState(null);
   const [toothEdit, setToothEdit] = useState(null);
 
   const { data: settings } = useSettings();
   const symbol = settings?.locale?.currencySymbol ?? 'Rs';
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['patients', id],
     queryFn: () => get(`/patients/${id}`),
   });
@@ -154,6 +157,18 @@ export default function PatientDetail() {
           <Skeleton height={14} width="18%" style={{ marginTop: 10 }} />
         </div>
       </Card>
+    );
+  }
+
+  // A failed request is not a missing patient. Saying "not found" for every
+  // error hid real server faults behind a reassuring message.
+  if (error) {
+    return (
+      <EmptyState
+        icon={IconAlert}
+        title={error.response?.status === 404 ? 'Patient not found' : 'Could not load this patient'}
+        text={error.friendlyMessage ?? 'Something went wrong. Please try again.'}
+      />
     );
   }
 
@@ -503,6 +518,7 @@ export default function PatientDetail() {
                     <th className="table__num">Total</th>
                     <th className="table__num">Balance</th>
                     <th>Status</th>
+                    <th aria-label="Actions" />
                   </tr>
                 </thead>
                 <tbody>
@@ -523,22 +539,41 @@ export default function PatientDetail() {
                       <td className="numeric" style={{ fontWeight: 600 }}>
                         {invoice.invoiceNo}
                       </td>
-                      <td className="muted">{date(invoice.issuedAt, 'D MMM YYYY')}</td>
+                      <td className="muted table__nowrap">{date(invoice.issuedAt, 'D MMM YYYY')}</td>
                       <td className="muted truncate" style={{ maxWidth: 240 }}>
                         {invoice.items?.map((item) => item.description).join(', ')}
                       </td>
                       <td className="table__num">{money(invoice.total, { symbol })}</td>
                       <td className="table__num">
-                        {invoice.balance > 0 ? (
+                        {invoice.status === 'void' ? (
+                          <span className="muted">—</span>
+                        ) : invoice.balance > 0 ? (
                           <strong style={{ color: 'var(--rose)' }}>{money(invoice.balance, { symbol })}</strong>
                         ) : (
-                          <span className="muted">—</span>
+                          <span className="muted">{money(0, { symbol })}</span>
                         )}
                       </td>
                       <td>
                         <Badge tone={INVOICE_STATUS[invoice.status]?.tone} dot>
                           {INVOICE_STATUS[invoice.status]?.label}
                         </Badge>
+                      </td>
+                      <td>
+                        {invoice.status !== 'void' && (
+                          <button
+                            type="button"
+                            className="icon-btn"
+                            data-tone="danger"
+                            title="Delete this invoice"
+                            aria-label={`Delete invoice ${invoice.invoiceNo}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setDeletingInvoice(invoice);
+                            }}
+                          >
+                            <IconTrash />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -601,6 +636,9 @@ export default function PatientDetail() {
       <HealthRecordForm open={recording} onClose={() => setRecording(false)} patientId={patient._id} />
       <InvoiceForm open={invoicing} onClose={() => setInvoicing(false)} patientId={patient._id} />
       {editingInvoice && <InvoiceForm open invoice={editingInvoice} onClose={() => setEditingInvoice(null)} />}
+      {deletingInvoice && (
+        <ConfirmDeleteInvoice invoice={deletingInvoice} symbol={symbol} onClose={() => setDeletingInvoice(null)} />
+      )}
       {toothEdit && (
         <ToothModal tooth={toothEdit.tooth} entry={toothEdit.entry} patientId={patient._id} onClose={() => setToothEdit(null)} />
       )}

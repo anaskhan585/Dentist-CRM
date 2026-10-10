@@ -149,6 +149,17 @@
   color: var(--rose);
 }
 
+/* A solid button carries the warning in its fill — red text on the brand
+   teal was close to unreadable. */
+.btn--primary[data-tone='danger'] {
+  background: var(--rose);
+  color: #fff;
+}
+
+.btn--primary[data-tone='danger']:hover:not(:disabled) {
+  background: #94372f;
+}
+
 .btn--ghost[data-tone='danger']:hover:not(:disabled) {
   background: var(--rose-soft);
 }
@@ -304,6 +315,28 @@
   cursor: pointer;
 }
 
+/* A second line under a cell's main value, e.g. the treatments on an invoice. */
+.table__sub {
+  display: block;
+  max-width: 165px;
+  margin-top: 2px;
+  font-size: var(--text-xs);
+  color: var(--ink-3);
+}
+
+/* A row's actions sit on one line, right up against the edge of the table. */
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sp-2);
+}
+
+.icon-btn[data-tone='danger']:hover:not(:disabled) {
+  background: var(--rose-soft);
+  color: var(--rose);
+}
+
 /* Rows are reachable by keyboard, so the focus ring has to be visible on them. */
 .table--clickable tbody tr:focus-visible {
   outline: 2px solid var(--brand);
@@ -314,6 +347,20 @@
 .table__num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* Reference numbers, dates and sums read as one token — breaking "$ 1,200" or
+   "10 Oct 2026" over two lines makes a dense table much harder to scan. */
+.table__num,
+.table .numeric,
+.table__nowrap {
+  white-space: nowrap;
+}
+
+/* `.table thead th` sets text-align: left and outranks `.table__num`, which
+   left the Total and Balance headings adrift from the figures beneath them. */
+.table thead th.table__num {
+  text-align: right;
 }
 
 /* A person cell: avatar + stacked name/meta. Used across most tables. */
